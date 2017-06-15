@@ -25,6 +25,16 @@ bool fileExists(const char* file_path)
   return ifile;
 }
 
+void setPublishVals(double &x, double &z, double& d,const YAML::Node &yaml_node)
+{
+  if (yaml_node.IsMap())
+  {
+    d=yaml_node["duration"].as<double>();
+    x=yaml_node["twist"]["linear"]["x"].as<double>();
+    z=yaml_node["twist"]["angular"]["z"].as<double>();
+  }
+}
+
 int main(int argc, char **argv)
 {
 
@@ -41,7 +51,7 @@ int main(int argc, char **argv)
   // make sure to create the node handle with the node_name used to initialize
   // (so that param relative scope works)
   ros::NodeHandle pubFromFileHandle(node_name);
-  pubFromFileHandle.param("rate",rate_param,1.0);
+  pubFromFileHandle.param("rate",rate_param,5.0);
   ROS_INFO_STREAM("/" << node_name << "/rate value set " << rate_param);
   pubFromFileHandle.param<std::string>("topic_name",topic_name,"publish_fromfile");
   ROS_INFO_STREAM("/" << node_name << "/topic_name value set " << topic_name);
@@ -53,30 +63,67 @@ int main(int argc, char **argv)
   // load YAML and validate
   if (input_file.empty()||(fileExists(input_file.c_str())==false))
   {
-    ROS_ERROR_STREAM("/"<<node_name<<"/input_file unset or not found. exit(EXIT_FAILURE)");
-    exit(EXIT_FAILURE);
+    ROS_ERROR_STREAM("/"<<node_name<<"/input_file unset or not found. exiting");
+    return(EXIT_FAILURE);
   }
   YAML::Node twist_node = YAML::LoadFile(input_file);
   if (inputIsValid(twist_node)!=true)
   {
-    ROS_ERROR_STREAM("/"<<node_name<<"/input_file corrupt or missing expected values. exit(EXIT_FAILURE)");
-    exit(EXIT_FAILURE);
+    ROS_ERROR_STREAM("/"<<node_name<<"/input_file corrupt or missing expected values. exiting");
+    return(EXIT_FAILURE);
   }
 
   ros::Publisher pubFromFileObj = pubFromFileHandle.advertise<geometry_msgs::Twist>(topic_name,msg_buffer_len);
 
   ros::Rate sendRate(rate_param);
+  // sleep once before publishing so that existing subscribers have time to connect
+  sendRate.sleep();
 
-  while(ros::ok())
+  std::size_t yaml_seq_index=0;
+  double curr_duration=0.0,max_duration=0.0,curr_lin_x=0.0,curr_ang_z=0.0;
+  // set the initial message properties
+  setPublishVals(curr_lin_x, curr_ang_z, max_duration,twist_node[yaml_seq_index]); 
+  ROS_INFO_STREAM("vals set: "<<curr_lin_x<<","<<curr_ang_z<<","<<max_duration);
+
+  while(ros::ok()&&(yaml_seq_index<twist_node.size()))
   {
-    geometry_msgs::Twist currentOutputMsg;
-    currentOutputMsg.linear.x=0.0;
-    currentOutputMsg.angular.z=0.0;
+    /*
+    float curr_duration,curr_lin_x,curr_ang_z;
+    max_duration=twist_node[yaml_seq_index]["duration"].as<double>();
+    curr_lin_x=twist_node[yaml_seq_index]["twist"]["linear"]["x"].as<double>();
+    curr_ang_z=twist_node[yaml_seq_index]["twist"]["angular"]["z"].as<double>();
+    ROS_INFO_STREAM("Object type: " << twist_node[yaml_seq_index].Type());
+    */
 
+    // TODO: do some thinking about the logic placement in regards to the duration and timing
+
+    if (curr_duration<=max_duration){
+      // rate_param given in hz, so increment current duration 
+      // by rate_period each step (1/rate_param)
+      curr_duration+=(1.0/rate_param);
+      ROS_INFO_STREAM("curr_duration now "<<curr_duration);
+    }
+    else
+    {
+      // reset current duration, increment yaml sequence index and retrieve the data
+      curr_duration=0.0;
+      yaml_seq_index++;
+      setPublishVals(curr_lin_x, curr_ang_z, max_duration,twist_node[yaml_seq_index]); 
+      // log it
+      ROS_INFO_STREAM("Parsed sequence["<<yaml_seq_index<<"] duration: "<<max_duration<<", curr_lin_x: "<<curr_lin_x<<", curr_ang_z: "<<curr_ang_z);
+    }
+
+    geometry_msgs::Twist currentOutputMsg;
+    currentOutputMsg.linear.x=curr_lin_x;
+    currentOutputMsg.angular.z=curr_ang_z;
+
+    //if (pubFromFileObj.publish(currentOutputMsg);
     pubFromFileObj.publish(currentOutputMsg);
 
     ros::spinOnce();
+ 
     sendRate.sleep();
+
   }
 
   return 0;

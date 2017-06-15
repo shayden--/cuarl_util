@@ -4,8 +4,26 @@
 #include "ros/console.h"
 #include "std_msgs/String.h"
 
-// misc includes
+// yaml includes
 #include "yaml-cpp/yaml.h"
+
+// std includes
+#include <fstream>
+
+// yaml input validation function
+// TODO: write unit tests and use them to develope this function
+bool inputIsValid(const YAML::Node &n_u_t)
+{
+  return true;
+}
+
+bool fileExists(const char* file_path)
+{
+  // explanation of this function:
+  // http://www.cplusplus.com/forum/general/1796/
+  std::ifstream ifile(file_path);
+  return ifile;
+}
 
 int main(int argc, char **argv)
 {
@@ -29,6 +47,21 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM("/" << node_name << "/topic_name value set " << topic_name);
   pubFromFileHandle.param("msg_buffer_len",msg_buffer_len,msg_buffer_len);
   ROS_INFO_STREAM("/" << node_name << "/msg_buffer_len value set " << msg_buffer_len);
+  pubFromFileHandle.getParam("input_file",input_file);
+  ROS_INFO_STREAM("/" << node_name << "/input_file value set " << input_file);
+
+  // load YAML and validate
+  if (input_file.empty()||(fileExists(input_file.c_str())==false))
+  {
+    ROS_ERROR_STREAM("/"<<node_name<<"/input_file unset or not found. exit(EXIT_FAILURE)");
+    exit(EXIT_FAILURE);
+  }
+  YAML::Node twist_node = YAML::LoadFile(input_file);
+  if (inputIsValid(twist_node)!=true)
+  {
+    ROS_ERROR_STREAM("/"<<node_name<<"/input_file corrupt or missing expected values. exit(EXIT_FAILURE)");
+    exit(EXIT_FAILURE);
+  }
 
   ros::Publisher pubFromFileObj = pubFromFileHandle.advertise<geometry_msgs::Twist>(topic_name,msg_buffer_len);
 

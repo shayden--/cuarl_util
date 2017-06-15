@@ -6,4 +6,4 @@ catkin_package()
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(publish_fromfile src/publish_fromfile.cpp)
-target_link_libraries(publish_fromfile ${catkin_LIBRARIES})
+target_link_libraries(publish_fromfile ${catkin_LIBRARIES} yaml-cpp)

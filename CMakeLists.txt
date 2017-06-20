@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(cuarl_util)
 find_package(catkin REQUIRED roscpp std_msgs geometry_msgs)
+
 catkin_package()
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS}
+  ${GTEST_INCLUDE_DIRS}
+)
 
-add_executable(publish_fromfile src/publish_fromfile.cpp)
+add_executable(publish_fromfile src/publish_fromfile.cpp src/pff_run_functions.cpp)
 target_link_libraries(publish_fromfile ${catkin_LIBRARIES} yaml-cpp)
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(GTest REQUIRED)
+  catkin_add_gtest(utest_pff_run_functions test/utest_pff_run_functions.cpp src/pff_run_functions.cpp)
+  target_link_libraries(utest_pff_run_functions ${catkin_LIBRARIES} yaml-cpp)
+endif() 

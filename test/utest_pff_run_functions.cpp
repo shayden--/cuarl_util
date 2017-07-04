@@ -4,10 +4,12 @@
 
 TEST(inputValidation,fileExists_pass)
 {
+  ASSERT_TRUE(fileExists("dovetrainlongman.dll"));
 }
 
 TEST(inputValidation,fileExists_fail)
 {
+  ASSERT_FALSE(fileExists("dovetrainlongman.dll"));
 }
 
 int main(int argc, char** argv)

@@ -1,0 +1,11 @@
+<launch>
+
+  <group ns="cuarl_util">
+    <node pkg="cuarl_util" name="utest_pff_run_functions" type="utest_pff_run_functions"/>
+  </group>
+
+  <node pkg="cuarl_util" name="utest_pff_run_functions" type="utest_pff_run_functions">
+    <param name="" value="$(find cuarl_util)/test/data/publish_twist_bad.yaml"/>
+  </node>
+
+</launch>

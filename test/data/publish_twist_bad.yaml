@@ -1,0 +1,77 @@
+---
+- {
+    duration: 1.13,
+    twist: {
+        linear: {
+            x: 2.0,
+            y: 0.0,
+            z: 0.0
+        },
+        angular: {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0
+        }
+    }
+}
+- {
+    duration: 3.0,
+    twist: {
+        linear: {
+            x: 0.70,
+            y: 0.0,
+            z: 0.0
+        },
+        angular: {
+            x: 0.0,
+            y: 0.0,
+            z: 0.70
+        }
+    }
+}
+- {
+    duration: 4.0,
+    twist: {
+        linear: {
+            x: 1.0,
+            y: 0.0,
+            z: 0.0
+        },
+        angular: {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0
+        }
+    }
+}
+- {
+    duration: 0.2,
+    twist: {
+        linear: {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0
+        },
+        angular: {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0
+        }
+    }
+}
+- {
+    duration: 0.2,
+    twist: {
+        linear: {
+            x: 0.0,
+            yarar: 0.0,
+            z: 0.0
+        },
+        angular: {
+            xylph: 0.0,
+            y: 0.0,
+            z: 0.0
+        }
+    }
+}
+...

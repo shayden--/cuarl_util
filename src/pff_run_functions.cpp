@@ -131,5 +131,33 @@ int runner(int argc, char **argv)
 
   }
 
+  // once the file processing loop finishes, send some(3) stop commands
+  // TODO: make this disablable (default: true) via passed option 
+  std::size_t stop_seq_index=0;
+  while(ros::ok()&&(stop_seq_index<3))
+  {
+
+    // explicitly set all values '0' for safety reasons
+    geometry_msgs::Twist currentOutputMsg;
+    currentOutputMsg.linear.x=0;
+    currentOutputMsg.linear.y=0;
+    currentOutputMsg.linear.z=0;
+    currentOutputMsg.angular.x=0;
+    currentOutputMsg.angular.y=0;
+    currentOutputMsg.angular.z=0;
+
+    //if (pubFromFileObj.publish(currentOutputMsg);
+    ROS_INFO_STREAM("Sending '[0,0,0][0,0,0]' twist...");
+
+    pubFromFileObj.publish(currentOutputMsg);
+    stop_seq_index++;
+
+    ros::spinOnce();
+ 
+    sendRate.sleep();
+
+  }
+
+  // return success
   return 0;
 }
